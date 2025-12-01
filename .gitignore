@@ -5,3 +5,6 @@ CLAUDE.md
 planning/
 research/
 .env
+
+# Python virtual environment
+venv/
