@@ -4,3 +4,7 @@ CLAUDE.md
 .claude/
 planning/
 research/
+.env
+
+# Python virtual environment
+venv/
