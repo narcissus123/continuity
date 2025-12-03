@@ -3,7 +3,6 @@
 **Track:** Concierge Agents  
 **Course:** 5-Day AI Agents Intensive (Google, Nov 2025)  
 **Author:** Narges Haeri  
-**GitHub:** [Your Repo Link]
 
 ---
 
@@ -513,17 +512,4 @@ pytest  # Run tests
 ---
 
 **Built with ❤️ by Narci for the YouTube creator community**
-
-
-
-
-
-
-
-
-
-
-
-
-
 
