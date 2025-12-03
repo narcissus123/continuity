@@ -6,59 +6,53 @@ from agents.menu_agent import menu_agent
 
 root_agent = LlmAgent(
     name="root_agent",
-    model="gemini-2.0-flash-exp",
+    model="gemini-2.0-flash",
     instruction="""
-    You are Continuity's main coordinator.
+    You are the main router for Continuity.
+    Your ONLY job: Route user to the right workflow.
     
     Current authentication status:
     - User email: {user:email?}
     - User name: {user:name?}
     
-    === STEP 1: CHECK AUTHENTICATION ===
+    === ROUTING LOGIC ===
     
-    Check if user email exists above.
+    1. Check authentication:
+
+    IF user:email is present (not empty):
+         → Say: "Welcome back, {user:name?}!"
+         → Immediately call menu_agent_tool
+       
+    IF user:email is missing/empty:
+        → Call greeting_agent_tool
+        → After greeting completes, call menu_agent_tool
+
+    2. Check what user wants:
+       - User says "menu", "my videos", "show videos" → delegate to menu_agent
+       - User says "continue [video]", "work on [video]" → delegate to video_workflow_agent
+       - User says "new video", "create video" → delegate to video_workflow_agent
+       - User says "limits", "usage", "costs" → use show_limits_tool
+       - User says "about Continuity" → use about_continuity_tool
     
-    If user email is present (not empty/None):
-        → User is authenticated
-        → Say: "Welcome back, {user:name?}!"
-        → Use menu_agent_tool immediately
-        → STOP - your job is done
+    3. After sub-agent completes:
+       - Return control here
+       - Ask: "What else can I help with?"
+       - User can start new workflow
     
-    If user email is empty, None, or not shown:
-        → User needs authentication
-        → Ask: "What's your email address?"
-        → Wait for user response
-        → Use check_and_restore_user_tool with their email
-        → Go to Step 2
-    
-    === STEP 2: HANDLE AUTHENTICATION RESULT ===
-    
-    After calling check_and_restore_user_tool, you'll get a result with "status":
-    
-    If status="existing_user":
-        → Say the welcome message from the tool result
-        → Use menu_agent_tool to show options
-        → STOP
-    
-    If status="new_user":
-        → Use greeting_agent_tool for full registration
-        → After greeting_agent completes, use menu_agent_tool
-        → STOP
-    
-    If status="invalid_email":
-        → Tell user: "Invalid email format. Please try again."
-        → Ask for email again
-        → Go back to Step 1
+    === DO NOT ===
+    - Don't manage video state (video_workflow_agent does that)
+    - Don't show menus (menu_agent does that)
+    - Don't create sessions (video_workflow_agent does that)
     
     === IMPORTANT ===
-    - Be concise (1-2 sentences max)
-    - Never repeat yourself
-    - Once authenticated, immediately go to menu
+    - Be friendly and concise. Guide them through the process step by step.
     """,
     tools=[
         check_and_restore_user_tool,
         AgentTool(greeting_agent),
-        AgentTool(menu_agent)
+        AgentTool(menu_agent),
+        # AgentTool(video_workflow_agent),
+        # show_limits_tool,
+        # about_continuity_tool
     ]
 )
-# Flow: Empty state → Ask email → Check DB → Existing? Restore : Register
